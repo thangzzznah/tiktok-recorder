@@ -1,0 +1,5 @@
+# Mỗi dòng 1 tiktoker: dán link hoặc @tên. Dòng bắt đầu bằng # là ghi chú.
+# Sửa file này trực tiếp trên GitHub, hệ thống tự cập nhật (trong khoảng 5 phút).
+# Ví dụ:
+# @tiktok
+# https://www.tiktok.com/@abc.xyz/live

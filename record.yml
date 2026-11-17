@@ -1,0 +1,47 @@
+name: TikTok Live Recorder
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # dự phòng: nếu chưa có lượt nào đang chạy thì khởi động
+  workflow_dispatch:          # bấm chạy tay
+  push:
+    paths: ["tiktokers.txt"]  # sửa danh sách -> chạy ngay nếu đang rảnh
+
+# Chỉ 1 lượt chạy cùng lúc; lượt mới xếp hàng chờ lượt cũ xong -> chạy gần như liên tục
+concurrency:
+  group: tiktok-recorder
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 358
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cài ffmpeg và thư viện
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          pip install -q -U -r requirements.txt
+
+      - name: Ghi cookie TikTok (nếu có)
+        env:
+          TIKTOK_COOKIES: ${{ secrets.TIKTOK_COOKIES }}
+        run: |
+          if [ -n "$TIKTOK_COOKIES" ]; then printf '%s\n' "$TIKTOK_COOKIES" > cookies.txt; fi
+
+      - name: Theo dõi và record
+        env:
+          PYTHONUNBUFFERED: "1"
+          GDRIVE_CLIENT_ID: ${{ secrets.GDRIVE_CLIENT_ID }}
+          GDRIVE_CLIENT_SECRET: ${{ secrets.GDRIVE_CLIENT_SECRET }}
+          GDRIVE_REFRESH_TOKEN: ${{ secrets.GDRIVE_REFRESH_TOKEN }}
+        run: python recorder.py
